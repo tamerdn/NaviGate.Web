@@ -1,0 +1,132 @@
+/* Modern and Professional Styles for Gümrük ve Lojistik Yönetim Sistemi */
+
+/* Custom Colors */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --background-color: #f8f9fa;
+    --text-color: #2c3e50;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    color: white !important;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    color: #fff !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--secondary-color) !important;
+    text-decoration: none;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Main Content Area */
+.container {
+    padding: 2rem 0;
+    background-color: var(--background-color);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Tables */
+.table {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+/* Forms */
+.form-control:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Alerts */
+.alert-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.alert-warning {
+    background-color: var(--warning-color);
+    color: #333;
+}
+
+.alert-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem 0;
+    margin-top: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .nav-link {
+        padding: 0.5rem 1rem;
+    }
+}

@@ -1,0 +1,96 @@
+﻿@model NaviGate.Web.ViewModels.PortIndexViewModel
+
+@{
+    ViewData["Title"] = "Liman Yönetimi";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<h1>Liman Yönetimi</h1>
+
+@* "Yeni Taşıyıcı Oluştur" butonunu SADECE Admin görebilir *@
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">Yeni Liman Oluştur</a>
+    </p>
+}
+
+@* ==================== ARAMA VE FİLTRELEME FORMU ==================== *@
+<div class="card card-body mb-4">
+    <form asp-action="Index" method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label asp-for="SearchString" class="form-label"></label>
+                <input asp-for="SearchString" class="form-control" />
+            </div>
+            <div class="col-md-5">
+                <label asp-for="CountryFilter" class="form-label"></label>
+                <select asp-for="CountryFilter" class="form-select" asp-items="Model.Countries">
+                    <option value="">Tüm Ülkeler</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter-circle me-1"></i> Filtrele
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Temizle
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Liman Adı</th>
+            <th>Liman Kodu</th>
+            <th>Ülke</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Ports) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PortName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PortCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country)
+            </td>
+                <td class="text-end btn-group">
+                    <a asp-action="Details" asp-route-id="@item.PortId" class="btn btn-outline-primary" title="Detaylar">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    @* Düzenle ve Sil linklerini SADECE Admin görebilir *@
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.PortId" class="btn btn-outline-secondary" title="Düzenle">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.PortId" class="btn btn-outline-danger" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    }
+                </td>
+        </tr>
+}
+    </tbody>
+</table>

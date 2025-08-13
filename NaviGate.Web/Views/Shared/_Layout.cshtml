@@ -1,0 +1,228 @@
+@using Microsoft.AspNetCore.Identity
+@using NaviGate.Web.Models
+@inject SignInManager<User> SignInManager
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - NaviGate Lojistik Platformu</title>
+
+    @* Gerekli Kütüphaneler *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NaviGate.Web.styles.css" asp-append-version="true" />
+
+    @* Yeni Layout için özel CSS stilleri *@
+    <style>
+        body {
+            font-size: .875rem;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0; /* Üstteki navbar için boşluk */
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        }
+
+        .sidebar-sticky {
+            display: flex; /* EKLENDİ */
+            flex-direction: column; /* EKLENDİ */
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+        }
+
+            .sidebar .nav-link .fa-fw {
+                width: 1.2em;
+            }
+
+            .sidebar .nav-link.active {
+                color: #0d6efd;
+            }
+
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, .25);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+        }
+
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+
+        main {
+            padding-top: 1rem;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 1050;
+        }
+
+        .navbar .dropdown {
+            position: static;
+        }
+
+        .navbar .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            left: auto;
+            transform: none;
+        }
+
+
+    </style>
+</head>
+<body>
+    @* ==================== 1. SABİT ÜST MENÜ (NAVBAR) ==================== *@
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" asp-controller="Dashboard" asp-action="Index">
+            <i class="fas fa-compass me-2"></i> NaviGate Platform
+        </a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        @* Arama Çubuğu (İsteğe Bağlı) *@
+        <form asp-controller="Shipments" asp-action="Search" method="get" class="w-100">
+            <input name="term" class="form-control form-control-dark w-100 rounded-0 border-0" type="text" placeholder="Referans No Ara..." aria-label="Search">
+        </form>
+
+        <div class="navbar-nav ms-auto">
+            <div class="nav-item text-nowrap d-flex align-items-center">
+                @await Component.InvokeAsync("Notification")
+            </div>
+        </div>
+    </header>
+    
+
+    <div class="container-fluid">
+        <div class="row">
+            @* ==================== 2. SOL DİKEY MENÜ (SIDEBAR) ==================== *@
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3 sidebar-sticky">
+
+                    @* Menü linklerini tutan ana <ul>. flex-grow-1 class'ı, menünün altındaki boşluğu doldurmasını sağlar *@
+                    <ul class="nav flex-column flex-grow-1">
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                            <span>Ana Menü</span>
+                        </h6>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                <i class="fas fa-tachometer-alt fa-fw me-2"></i> Ana Panel
+                            </a>
+                        </li>  
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Shipments" asp-action="Index">
+                                <i class="fa-solid fa-ship"></i> Sevkiyat Yönetimi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="ShipmentTrackings" asp-action="Index">
+                                <i class="fa-solid fa-ferry"></i> Sevkiyat Durumları
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="AiAlerts" asp-action="Index">
+                                <i class="fas fa-brain fa-fw me-2"></i> AI Uyarıları
+                            </a>
+                        </li>
+
+                        @* Sadece Admin ve Manager'ların göreceği yönetim menüsü *@
+                        @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("User"))
+                        {
+                            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                                <span>Yönetim Paneli</span>
+                            </h6>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Documents" asp-action="Index">
+                                    <i class="fas fa-file-alt fa-fw me-2"></i> Dökümanlar
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Containers" asp-action="Index">
+                                    <i class="fas fa-box fa-fw me-2"></i> Konteynerler
+                                </a>
+                            </li>
+
+                            @* Sadece Admin'in göreceği hassas menüler *@
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Firms" asp-action="Index">
+                                        <i class="fas fa-building fa-fw me-2"></i> Firmalar
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("User"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Users" asp-action="Index">
+                                        <i class="fas fa-users-cog fa-fw me-2"></i> Kullanıcılar
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Carriers" asp-action="Index">
+                                        <i class="fas fa-truck fa-fw me-2"></i> Taşıyıcılar
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Ports" asp-action="Index">
+                                        <i class="fas fa-anchor fa-fw me-2"></i> Limanlar
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul> @* <-- TÜM MENÜ LİNKLERİ BU UL İÇİNDE BİTER *@
+
+                    @* KULLANICI MENÜSÜ, TÜM LİNKLERDEN VE ROL KONTROLLERİNDEN SONRA, EN ALTTA *@
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <partial name="_LoginPartial" />
+                    }
+
+                </div>
+            </nav>
+
+            @* ==================== 3. ANA İÇERİK ALANI ==================== *@
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @* Footer'ı kaldırabilir veya daha basit hale getirebiliriz. Modern arayüzlerde genellikle footer daha az yer kaplar. *@
+    @* <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - NaviGate Lojistik Platformu
+        </div>
+    </footer>
+    *@
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

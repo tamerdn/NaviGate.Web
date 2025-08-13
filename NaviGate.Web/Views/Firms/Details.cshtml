@@ -1,0 +1,94 @@
+﻿@model NaviGate.Web.Models.Firm
+
+@{
+    ViewData["Title"] = "Firma Detayları";
+}
+
+<h1>Firma Detayları</h1>
+
+<div>
+    <h4>@Model.FirmName</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.FirmName)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.FirmName)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.FirmType)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.FirmType)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.ContactPerson)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.ContactPerson)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.PhoneNumber)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.PhoneNumber)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Address)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Address)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.TaxNumber)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.TaxNumber)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.TaxOffice)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.TaxOffice)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.IsActive)
+        </dt>
+        <dd class="col-sm-9">
+            @(Model.IsActive ? "Aktif" : "Pasif")
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Notes)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Notes)
+        </dd>
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.CreatedAtUtc)
+        </dt>
+        <dd class="col-sm-9">
+            @Model.CreatedAtUtc.ToLocalTime().ToString("g")
+        </dd>
+        @if (Model.ModifiedAtUtc.HasValue)
+        {
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => model.ModifiedAtUtc)
+            </dt>
+            <dd class="col-sm-9">
+                @* Değeri al, yerel saate çevir ve güzel formatla göster *@
+                @Model.ModifiedAtUtc.Value.ToLocalTime().ToString("g")
+            </dd>
+        }
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.FirmId" class="btn btn-primary">Düzenle</a> |
+    <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+</div>

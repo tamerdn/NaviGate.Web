@@ -1,0 +1,37 @@
+﻿@model NaviGate.Web.ViewModels.ContainerCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Konteyner Oluştur";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ShipmentId" class="control-label"></label>
+                <select asp-for="ShipmentId" class="form-select" asp-items="Model.AuthorizedShipments">
+                    <option value="">-- Sevkiyat Seçiniz --</option>
+                </select>
+                <span asp-validation-for="ShipmentId" class="text-danger"></span>
+            </div>
+
+            @* Tüm form alanları artık bu tek satırdan geliyor *@
+            <partial name="_ContainerFormFields" model="Model.Container" />
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Oluştur" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

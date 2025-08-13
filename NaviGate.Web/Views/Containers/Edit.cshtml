@@ -1,0 +1,34 @@
+﻿@model NaviGate.Web.ViewModels.ContainerEditViewModel
+
+@{
+    ViewData["Title"] = "Konteyner Düzenle";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Sevkiyat: @Model.Shipment?.ReferenceNumber</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" asp-route-id="@Model.Container.ContainerId">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* ID'leri gizli olarak forma ekliyoruz ki post edildiğinde kaybolmasınlar *@
+            <input type="hidden" asp-for="Container.ContainerId" />
+            <input type="hidden" asp-for="Container.ShipmentId" />
+
+            @* Form alanlarını partial view'dan çağırıyoruz *@
+            <partial name="_ContainerFormFields" model="Model.Container" />
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Kaydet" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

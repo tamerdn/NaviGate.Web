@@ -1,0 +1,121 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using NaviGate.Web.Models
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@* Bu bileşene özel CSS stilleri *@
+<style>
+    .sidebar-footer {
+        border-top: 1px solid #dee2e6;
+        padding: 0.75rem;
+        background-color: var(--bs-light-bg-subtle);
+    }
+
+    .user-profile-menu .dropdown-toggle::after {
+        display: none; /* Varsayılan dropdown okunu gizle */
+    }
+
+    .user-profile-trigger {
+        display: flex;
+        align-items: center;
+        padding: .5rem;
+        border-radius: .375rem;
+        text-decoration: none;
+        color: #212529;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+        .user-profile-trigger:hover {
+            background-color: #d8e2ef;
+        }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    .user-info {
+        flex-grow: 1;
+        line-height: 1.2;
+        overflow: hidden;
+    }
+
+        .user-info .user-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info .user-email {
+            font-size: 0.8rem;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    /* Açılır menüyü yukarı ve sola hizalı yap */
+    .user-profile-menu .dropdown-menu {
+        /* Bootstrap 5.2+ ile gelen --bs-position'ı kullanabiliriz */
+        inset: auto 0 100% 0 !important;
+        transform: none !important;
+    }
+</style>
+
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+
+    @* YENİ GÜVENLİK KONTROLÜ: Eğer cookie var ama kullanıcı DB'de yoksa, hiçbir şey gösterme *@
+    @if (user != null)
+    {
+        var firstInitial = user.FirstName?.Length > 0 ? user.FirstName.Substring(0, 1) : "";
+        var lastInitial = user.LastName?.Length > 0 ? user.LastName.Substring(0, 1) : "";
+        var userInitials = (firstInitial + lastInitial).ToUpper();
+        var userRole = (await UserManager.GetRolesAsync(user)).FirstOrDefault() ?? "Kullanıcı";
+
+        <div class="sidebar-footer">
+            <div class="dropup user-profile-menu">
+                <div class="user-profile-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="user-avatar">@userInitials</div>
+                    <div class="user-info">
+                        <div class="user-name" title="@user.FirstName @user.LastName">@user.FirstName @user.LastName</div>
+                        <div class="user-email" title="@user.Email">@user.Email</div>
+                    </div>
+                    <i class="fas fa-ellipsis-v ms-2 text-muted"></i>
+                </div>
+                <ul class="dropdown-menu shadow">
+                    <li>
+                        <div class="px-3 py-2 text-muted">
+                            <div class="fw-bold">@user.FirstName @user.LastName</div>
+                            <small>@userRole</small>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-cog fa-fw me-2"></i>Hesabım</a></li>
+                    <li>
+                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                            <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt fa-fw me-2"></i>Çıkış Yap</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    }
+}
+else
+{
+    @* Giriş yapmamış kullanıcı için olan kısım *@
+}

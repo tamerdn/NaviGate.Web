@@ -1,0 +1,104 @@
+﻿@model NaviGate.Web.Models.Document
+
+@{
+    ViewData["Title"] = "Döküman Detayları";
+    var userRoles = ViewData["UserRoles"] as Dictionary<string, string>;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <h4>Dosya: @Model.FileName</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.DocumentType)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.DocumentType)
+        </dd>
+
+        <dt class="col-sm-3">
+            Dosya Adı
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.FileName)
+        </dd>
+
+        <dt class="col-sm-3">
+            Yüklenme Tarihi
+        </dt>
+        <dd class="col-sm-9">
+            @Model.UploadDateUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+        </dd>
+
+        @if (Model.ModifiedAtUtc.HasValue)
+        {
+            <dt class="col-sm-3">
+                Son Güncellenme Tarihi
+            </dt>
+            <dd class="col-sm-9">
+                @Model.ModifiedAtUtc.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+            </dd>
+        }
+
+        <dt class="col-sm-3">
+            Yükleyen Kullanıcı
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.UploadedByUser.FirstName) @Html.DisplayFor(model => model.UploadedByUser.LastName)
+            @if (userRoles != null && userRoles.ContainsKey(Model.UploadedByUserId))
+            {
+                <span class="badge bg-secondary fw-normal ms-2">@userRoles[Model.UploadedByUserId]</span>
+            }
+        </dd>
+
+        <dt class="col-sm-3">
+            Ait Olduğu Sevkiyat
+        </dt>
+        <dd class="col-sm-9">
+            <a asp-action="Details" asp-controller="Shipments" asp-route-id="@Model.ShipmentId"
+               class="btn btn-outline-secondary btn-sm">
+                @Model.Shipment.ReferenceNumber
+            </a>
+        </dd>
+
+        <dt class="col-sm-3">
+            Dosya Boyutu
+        </dt>
+        <dd class="col-sm-9">
+            @if (Model.FileSizeInBytes.HasValue)
+            {
+                var sizeInKb = (Model.FileSizeInBytes.Value / 1024f).ToString("0.00");
+                <span>@sizeInKb KB</span>
+            }
+            else
+            {
+                <span class="text-muted">Bilinmiyor</span>
+            }
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.VerificationStatus)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.VerificationStatus)
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.VerificationNotes)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.VerificationNotes)
+        </dd>
+        
+    </dl>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Download" asp-route-id="@Model.DocumentId" class="btn btn-success me-2">İndir</a>
+    <a asp-action="Edit" asp-route-id="@Model.DocumentId" class="btn btn-primary me-2">Düzenle</a>
+    <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+</div>
+
+

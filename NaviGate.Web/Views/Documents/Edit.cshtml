@@ -1,0 +1,77 @@
+﻿@model NaviGate.Web.ViewModels.DocumentEditViewModel
+@using NaviGate.Web.Helpers
+
+@{
+    ViewData["Title"] = "Döküman Düzenle";
+    // Doğrulama durumu için dropdown seçeneklerini burada oluşturalım.
+    var verificationStatusOptions = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Onay Bekliyor", Text = "Onay Bekliyor" },
+        new SelectListItem { Value = "Onaylandı", Text = "Onaylandı" },
+        new SelectListItem { Value = "Reddedildi", Text = "Reddedildi" }
+    };
+}
+
+<h1>@ViewData["Title"]</h1>
+@* Ait olduğu sevkiyatın referans numarasını gösteriyoruz *@
+<h4>Sevkiyat: @ViewBag.ShipmentReferenceNumber</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" asp-action="Edit" enctype="multipart/form-data">
+            <input type="hidden" asp-for="DocumentId" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3 p-3 border rounded bg-light">
+                <strong>Mevcut Dosya:</strong>
+                <a asp-action="Download" asp-route-id="@Model.DocumentId" class="link-primary">
+                    <i class="fas fa-download me-1"></i> @Model.FileName
+                </a>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="NewDocumentFile" class="form-label"></label>
+                <input asp-for="NewDocumentFile" class="form-control" type="file" />
+                <span asp-validation-for="NewDocumentFile" class="text-danger"></span>
+            </div>
+
+            <hr />
+            <h5>Döküman Bilgileri</h5>
+
+            <div class="form-group mb-3">
+                <label asp-for="DocumentType" class="control-label"></label>
+                <select asp-for="DocumentType" class="form-select" asp-items="Html.GetEnumSelectList<DocumentType>()"></select>
+                <span asp-validation-for="DocumentType" class="text-danger"></span>
+            </div>
+
+            @* YÖNETİCİLER İÇİN ONAY BÖLÜMÜ *@
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="VerificationStatus" class="control-label"></label>
+                    @* Metin kutusu yerine dropdown menü daha kullanışlı *@
+                    <select asp-for="VerificationStatus" class="form-select" asp-items="verificationStatusOptions"></select>
+                    <span asp-validation-for="VerificationStatus" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="VerificationNotes" class="control-label"></label>
+                    <textarea asp-for="VerificationNotes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="VerificationNotes" class="text-danger"></span>
+                </div>
+            }
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Kaydet" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

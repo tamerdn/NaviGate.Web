@@ -1,0 +1,112 @@
+﻿@model NaviGate.Web.ViewModels.UserEditViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Düzenle";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>@Model.FirstName @Model.LastName</h4>
+<h5>
+        <strong>Firma:</strong>
+        @(Model.FirmOptions.FirstOrDefault(f => f.Value == Model.FirmId.ToString())?.Text)
+    </h5>
+<h5><strong>Rol: </strong>@Model.SelectedRole</h5>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-group mb-3">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+            </div
+
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="form-group">
+                    <label asp-for="FirmId"></label>
+                    <select asp-for="FirmId" asp-items="Model.FirmOptions" class="form-control"></select>
+                </div>
+        
+                <div class="form-group">
+                    <label asp-for="SelectedRole"></label>
+                    <select asp-for="SelectedRole" asp-items="Model.RoleOptions" class="form-control"></select>
+                </div>
+            }
+            else if (User.IsInRole("Manager"))
+            {
+                <input type="hidden" asp-for="FirmId" />
+        
+                <div class="form-group">
+                    <label asp-for="SelectedRole"></label>
+                    <select asp-for="SelectedRole" class="form-control">
+                        <option value="Manager" selected="@(Model.SelectedRole == "Manager")">Manager</option>
+                        <option value="User" selected="@(Model.SelectedRole == "User")">User</option>
+                    </select>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="FirmId" />
+                <input type="hidden" asp-for="SelectedRole" />
+            }
+            
+
+            @* --- Firma alanı --- 
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="FirmId" class="control-label"></label>
+                    <select asp-for="FirmId" class="form-control" asp-items="Model.FirmOptions"></select>
+                </div>
+            }
+            else
+            {
+                @* Firma değişmesin diye hidden alan koyuyoruz *@
+                
+
+            @* --- Rol alanı --- 
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="SelectedRole" class="control-label"></label>
+                    <select asp-for="SelectedRole" class="form-control" asp-items="Model.RoleOptions"></select>
+                </div>
+            }
+            else if (User.IsInRole("Manager"))
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="SelectedRole" class="control-label"></label>
+                    <select asp-for="SelectedRole" class="form-control">
+                        @foreach (var role in Model.RoleOptions.Where(r => r.Value == "Manager" || r.Value == "User"))
+                        {
+                            var selected = Model.SelectedRole == role.Value ? "selected" : null;
+                            <option value="@role.Value" selected="@selected">@role.Text</option>
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                @* User rol değiştiremesin diye hidden alan 
+                <input type="hidden" asp-for="SelectedRole" />
+            }*@
+           
+            <div class="form-group">
+                <input type="submit" value="Kaydet" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>

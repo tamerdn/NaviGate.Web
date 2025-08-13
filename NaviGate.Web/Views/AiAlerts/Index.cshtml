@@ -1,0 +1,163 @@
+﻿@* DİKKAT: Modelimiz artık gruplanmış bir yapıya sahip *@
+@model IEnumerable<IGrouping<NaviGate.Web.Models.Shipment, NaviGate.Web.Models.AiAlert>>
+
+@{
+    ViewData["Title"] = "AI Uyarıları";
+}
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: #e7f1ff;
+        color: #0c63e4;
+    }
+
+    .alert-card {
+        border: none;
+        border-top: 1px solid #dee2e6;
+        border-radius: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .accordion-body {
+        padding: 0;
+    }
+
+    .alert-card.is-resolved {
+        opacity: 0.6;
+        background-color: #f8f9fa;
+    }
+
+        .alert-card.is-resolved .alert-icon {
+            color: #6c757d !important;
+        }
+
+    .alert-icon {
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+</style>
+
+<h1>@ViewData["Title"]</h1>
+<p>Sistem tarafından tespit edilen potansiyel sorunlar.</p>
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> Harika! Sistemde ilgilenilmesi gereken bir uyarı bulunmuyor.
+    </div>
+}
+else
+{
+    <div class="accordion" id="alertsAccordion">
+        @foreach (var shipmentGroup in Model)
+        {
+            var shipment = shipmentGroup.Key;
+            var alerts = shipmentGroup.ToList();
+            var collapseId = $"collapse-{shipment.ShipmentId}";
+            var headerId = $"header-{shipment.ShipmentId}";
+
+            // ==================== YENİ MANTIK BLOĞU BURADA BAŞLIYOR ====================
+            // Çözülmemiş uyarıları ciddiyet seviyelerine göre sayalım.
+            var unresolvedAlerts = alerts.Where(a => !a.IsResolved).ToList();
+
+            // Kırmızı Çarpı ikonu için: "Kritik" veya "Hata" seviyesindekiler
+            var criticalErrorCount = unresolvedAlerts.Count(a => a.Severity == "Kritik" || a.Severity == "Hata");
+
+            // Kırmızı Ünlem ikonu için: "Önemli" seviyesindekiler
+            var importantCount = unresolvedAlerts.Count(a => a.Severity == "Önemli");
+
+            // Sarı Ünlem ikonu için: "Uyarı" seviyesindekiler
+            var warningCount = unresolvedAlerts.Count(a => a.Severity == "Uyarı");
+
+            var totalUnresolvedCount = unresolvedAlerts.Count;
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headerId">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        <div class="d-flex justify-content-between w-100 align-items-center pe-3">
+                            <span>
+                                <strong>Sevkiyat:</strong> @shipment.ReferenceNumber
+                            </span>
+                            <div>
+                                @if (totalUnresolvedCount > 0)
+                                {
+                                    // Sadece sayısı 0'dan büyük olan uyarı tiplerini göster
+                                    if (criticalErrorCount > 0)
+                                    {
+                                        <span class="badge bg-danger me-2" title="Kritik veya Hata">
+                                            <i class="fas fa-times-circle me-1"></i> @criticalErrorCount
+                                        </span>
+                                    }
+                                    if (importantCount > 0)
+                                    {
+                                        <span class="badge bg-danger me-2" title="Önemli">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> @importantCount
+                                        </span>
+                                    }
+                                    if (warningCount > 0)
+                                    {
+                                        <span class="badge bg-warning text-dark me-2" title="Uyarı">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> @warningCount
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success rounded-pill">@alerts.Count Çözülmüş Uyarı</span>
+                                }
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headerId" data-bs-parent="#alertsAccordion">
+                    <div class="accordion-body">
+                        @foreach (var alert in alerts)
+                        {
+                            // Bir önceki cevaptaki renk/ikon belirleme mantığı
+
+                            var cardClass = alert.IsResolved ? "is-resolved" : "";
+                            var iconClass = "fas fa-info-circle";
+                            var iconColorClass = "text-secondary";
+                            switch (alert.Severity)
+                            {
+                                case "Kritik":
+                                case "Hata":
+                                    iconColorClass = "text-danger"; iconClass = "fas fa-times-circle"; break;
+                                case "Önemli":
+                                    iconColorClass = "text-danger"; iconClass = "fas fa-exclamation-triangle"; break;
+                                case "Uyarı":
+                                    iconColorClass = "text-warning"; iconClass = "fas fa-exclamation-triangle"; break;
+                            }
+
+                            <div class="card alert-card @cardClass">
+                                <div class="card-body d-flex align-items-center">
+                                    <i class="@iconClass @iconColorClass alert-icon"></i>
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title mb-1">@alert.AlertType</h5>
+                                        <p class="card-text">@alert.Description</p>
+                                        <small class="text-muted">Oluşturulma: @alert.CreatedAtUtc.ToLocalTime().ToString("g")</small>
+                                    </div>
+                                    @if (!alert.IsResolved)
+                                    {
+                                        <form asp-action="Resolve" asp-route-id="@alert.AiAlertId" method="post" class="ms-3">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Çözüldü</button>
+                                        </form>
+                                    }
+                                    <a asp-action="Delete" asp-route-id="@alert.AiAlertId" class="btn btn-sm btn-outline-danger ms-2">Sil</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+

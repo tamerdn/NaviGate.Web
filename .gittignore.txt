@@ -1,0 +1,21 @@
+# Visual Studio generated
+*.vs/
+*.user
+*.suo
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Rider generated
+.idea/
+
+# User Secrets
+secrets.json
+
+# Other files
+appsettings.Development.json
+
+# OS generated files
+.DS_Store
+Thumbs.db

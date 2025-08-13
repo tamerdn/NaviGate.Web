@@ -1,0 +1,204 @@
+﻿@model NaviGate.Web.Models.ViewModels.ShipmentIndexViewModel
+@using Microsoft.AspNetCore.Identity
+@using NaviGate.Web.Models
+@inject UserManager<User> UserManager
+
+@{
+    ViewData["Title"] = "Sevkiyat Yönetimi";
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<h1>Sevkiyat Yönetimi</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">Yeni Sevkiyat Oluştur</a>
+</p>
+
+
+@* ==================== ARAMA VE FİLTRELEME FORMU ==================== *@
+<div class="card card-body mb-4">
+    <form asp-action="Index" method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="SearchString" class="form-label">Arama</label>
+                <input name="searchString" value="@Model.SearchString" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">Durum</label>
+                <select name="statusFilter" class="form-select" asp-items="Model.Statuses">
+                    <option value="">Tüm Durumlar</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="carrierIdFilter" class="form-label">Taşıyıcı</label>
+                <select name="carrierIdFilter" class="form-select" asp-items="Model.Carriers">
+                    <option value="">Tüm Taşıyıcılar</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter-circle me-1"></i> Filtrele
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Temizle
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().ReferenceNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().EstimatedDepartureUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().EstimatedArrivalUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().FreightCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().Incoterms)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().CreatedAtUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().ModifiedAtUtc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().Firm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().CreatedByUser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().Carrier)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().DeparturePort)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Shipments.First().ArrivalPort)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var userRoles = ViewData["UserRoles"] as Dictionary<string, string>;
+        }
+        @foreach (var item in Model.Shipments)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReferenceNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EstimatedDepartureUtc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EstimatedArrivalUtc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FreightCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Incoterms)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAtUtc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ModifiedAtUtc)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Firm.FirmName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedByUser.FirstName) @Html.DisplayFor(modelItem => item.CreatedByUser.LastName)
+                    @if (userRoles != null && userRoles.ContainsKey(item.CreatedByUserId))
+                    {
+                        <span class="badge bg-secondary fw-normal">@userRoles[item.CreatedByUserId]</span>
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Carrier.CarrierName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeparturePort.PortName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ArrivalPort.PortName)
+                </td>
+                
+
+                <td class="text-end btn-group">
+                    @{
+                        var isOwner = item.CreatedByUserId == currentUserId;
+                    }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || isOwner)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.ShipmentId" class="btn btn-outline-secondary" title="Düzenle">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.ShipmentId" class="btn btn-outline-primary" title="Detaylar">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || isOwner)
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.ShipmentId" class="btn btn-outline-danger" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    } 
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@functions {
+    public string GetStatusClass(ShipmentStatus status)
+    {
+        return status switch
+        {
+            ShipmentStatus.ReadyForDispatch => "bg-warning text-dark",
+            ShipmentStatus.InTransit => "bg-primary",
+            ShipmentStatus.AtCustoms => "bg-info text-dark",
+            ShipmentStatus.Completed => "bg-success",
+            ShipmentStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary",
+        };
+    }
+}
+

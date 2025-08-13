@@ -1,0 +1,145 @@
+﻿@model NaviGate.Web.ViewModels.DocumentIndexViewModel
+
+@{
+    ViewData["Title"] = "Döküman Yönetimi";
+    var userRoles = ViewData["UserRoles"] as Dictionary<string, string>;
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+
+        @TempData["ErrorMessage"]
+
+    </div>
+
+}
+
+<h1>@ViewData["Title"]</h1>
+<p><a asp-action="Create" class="btn btn-success">Yeni Döküman Yükle</a></p>
+
+@* ==================== ARAMA VE FİLTRELEME FORMU ==================== *@
+<div class="card card-body mb-4">
+    <form asp-action="Index" method="get">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label asp-for="SearchString" class="form-label"></label>
+                <input asp-for="SearchString" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="ShipmentIdFilter" class="form-label"></label>
+                <select asp-for="ShipmentIdFilter" class="form-select" asp-items="Model.Shipments">
+                    <option value="">Tüm Sevkiyatlar</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="DocumentTypeFilter" class="form-label"></label>
+                <select asp-for="DocumentTypeFilter" class="form-select" asp-items="Model.DocTypes">
+                    <option value="">Tüm Tipler</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-filter-circle me-1"></i> Filtrele
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Temizle
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.DocumentTypeFilter)</th>
+            <th>Dosya Adı</th>
+            <th>Ait Olduğu Sevkiyat</th>
+            <th>Yükleyen Kullanıcı</th>
+            <th>Yüklenme Tarihi</th>
+            <th>Güncellenme Tarihi</th>
+            <th>Onay Durumu</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            // Kullanıcı rollerini Controller'dan (ViewData ile) almamız gerekecek.
+            // Şimdilik bu kısmı basitleştirilmiş yapalım.
+        }
+        @foreach (var item in Model.Documents)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.DocumentType)</td>
+                <td>@Html.DisplayFor(modelItem => item.FileName)</td>
+                <td>
+                    <a asp-action="Details" asp-controller="Shipments" class="btn btn-outline-secondary" asp-route-id="@item.ShipmentId">@item.Shipment.ReferenceNumber</a>
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UploadedByUser.FirstName) @Html.DisplayFor(modelItem => item.UploadedByUser.LastName)
+                    @if (userRoles != null && userRoles.ContainsKey(item.UploadedByUserId))
+                    {
+                        <span class="badge bg-secondary fw-normal">@userRoles[item.UploadedByUserId]</span>
+                    }
+                </td>
+                <td>@item.UploadDateUtc.ToLocalTime().ToString("g")</td>
+                @* Güncellenme tarihinin dolu olup olmadığını (null olup olmadığını) kontrol et *@
+
+                <td>
+                    @if (item.ModifiedAtUtc.HasValue)
+                    {
+                        @item.ModifiedAtUtc.Value.ToLocalTime().ToString("g")
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+                <td>
+                    @* Onay Durumu için renkli rozetler *@
+                    <span class="badge @GetVerificationStatusClass(item.VerificationStatus)">
+                        @item.VerificationStatus
+                    </span>
+                </td>
+                <td class="text-end btn-group">
+                    <a asp-action="Download" asp-controller="Documents" asp-route-id="@item.DocumentId" class="btn btn-outline-success" title="İndir">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.DocumentId" class="btn btn-outline-primary" title="Detaylar">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@item.DocumentId" class="btn btn-outline-secondary" title="Düzenle">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.DocumentId" class="btn btn-outline-danger" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+                
+            </tr>
+        }
+    </tbody>
+</table>
+
+@* Bu yardımcı fonksiyon, Onay Durumu için renkli rozetler oluşturur *@
+@functions {
+    public string GetVerificationStatusClass(string status)
+    {
+        return status switch
+        {
+            "Onaylandı" => "bg-success",
+            "Reddedildi" => "bg-danger",
+            "Onay Bekliyor" => "bg-warning text-dark",
+            _ => "bg-secondary",
+        };
+    }
+}
+
+

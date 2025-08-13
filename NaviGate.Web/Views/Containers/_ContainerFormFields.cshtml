@@ -1,0 +1,27 @@
+﻿@model NaviGate.Web.Models.Container
+
+<div class="form-group mb-3">
+    <label asp-for="ContainerNumber" class="control-label"></label>
+    <input asp-for="ContainerNumber" class="form-control" />
+    <span asp-validation-for="ContainerNumber" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="ContainerType" class="control-label"></label>
+    <input asp-for="ContainerType" class="form-control" placeholder="örn: 40'HC" />
+    <span asp-validation-for="ContainerType" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="SealNumber" class="control-label"></label>
+    <input asp-for="SealNumber" class="form-control" />
+    <span asp-validation-for="SealNumber" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="GrossWeightKg" class="control-label"></label>
+    <input asp-for="GrossWeightKg" class="form-control" type="text" />
+    <span asp-validation-for="GrossWeightKg" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="PackageQuantity" class="control-label"></label>
+    <input asp-for="PackageQuantity" class="form-control" type="number" />
+    <span asp-validation-for="PackageQuantity" class="text-danger"></span>
+</div>

@@ -1,0 +1,252 @@
+﻿@model IEnumerable<NaviGate.Web.Models.Shipment>
+@using NaviGate.Web.Helpers
+
+@{
+    ViewData["Title"] = "Sevkiyat Durumları ve Hareketleri";
+
+    // İlerleme çubuğunun mantıksal sırasını burada tanımlıyoruz.
+    var statusStages = new[]
+    {
+        ShipmentStatus.Draft,
+        ShipmentStatus.ReadyForDispatch,
+        ShipmentStatus.InTransit,
+        ShipmentStatus.AtCustoms,
+        ShipmentStatus.Completed
+    };
+}
+
+@* ==================== YENİ TASARIM İÇİN CSS STİLLERİ ==================== *@
+<style>
+    .timeline-container {
+        margin-bottom: 2rem;
+        border: 1px solid #e0e0e0;
+        border-radius: .375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, .075);
+        overflow: hidden; /* Kart kenarlarını keskin tutar */
+    }
+
+    .shipment-summary-header {
+        padding: 1rem 1.25rem;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .timeline {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 40px 0;
+        position: relative;
+        justify-content: space-between;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #e0e0e0;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .timeline .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background-color: #0d6efd;
+            transform: translateY(-50%);
+            z-index: 2;
+            transition: width 0.5s ease-in-out;
+        }
+
+    .timeline-step {
+        text-align: center;
+        position: relative;
+        z-index: 3;
+        flex: 1;
+    }
+
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 4px solid #e0e0e0;
+        margin: 0 auto 10px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #adb5bd;
+        transition: all 0.4s ease;
+    }
+
+    .step-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .timeline-step.completed .step-circle {
+        border-color: #0d6efd;
+        background-color: #0d6efd;
+        color: #fff;
+    }
+
+    .timeline-step.completed .step-label {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .timeline-step.active .step-circle {
+        border-color: #198754;
+        background-color: #198754;
+        color: #fff;
+        transform: scale(1.2);
+    }
+
+    .timeline-step.active .step-label {
+        color: #198754;
+        font-weight: 700;
+    }
+
+    .trackings-list .list-group-item {
+        border-left: 4px solid #e0e0e0;
+        border-radius: 0;
+        margin-bottom: 10px;
+        padding-left: 1.5rem;
+    }
+
+        .trackings-list .list-group-item:last-child {
+            margin-bottom: 0;
+        }
+</style>
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-muted">Aktif sevkiyatlarınızın anlık durumunu ve geçmiş hareketlerini takip edin.</p>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Görüntülenecek sevkiyat bulunamadı.</div>
+}
+
+@foreach (var shipment in Model)
+{
+    var detailsId = $"details-{shipment.ShipmentId}";
+
+    <div class="card timeline-container">
+        @* ==================== 1. KART BAŞLIĞI (ÖZET) ==================== *@
+        <div class="shipment-summary-header">
+            <div>
+                <h5 class="mb-0">
+                    <a asp-controller="Shipments" asp-action="Details" asp-route-id="@shipment.ShipmentId" class="text-decoration-none">
+                        @shipment.ReferenceNumber
+                    </a>
+                </h5>
+                <small class="text-muted">@shipment.DeparturePort?.PortName -> @shipment.ArrivalPort?.PortName</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="badge @(GetStatusClass(shipment.Status)) rounded-pill fs-6 me-3">
+                    @shipment.Status.GetDisplayName()
+                </span>
+                <a class="btn btn-outline-primary btn-sm toggle-details-btn" data-bs-toggle="collapse" href="#@detailsId" role="button" aria-expanded="false" aria-controls="@detailsId">
+                    Detayları Göster
+                </a>
+            </div>
+        </div>
+
+        @* ==================== 2. AÇILIR-KAPANIR DETAY BÖLÜMÜ ==================== *@
+        <div class="collapse timeline-details" id="@detailsId">
+            <div class="card-body">
+                @if (shipment.Status == ShipmentStatus.Cancelled)
+                {
+                    <div class="alert alert-danger mb-0">Bu sevkiyat iptal edilmiştir.</div>
+                }
+                else
+                {
+                    int currentStageIndex = Array.IndexOf(statusStages, shipment.Status);
+                    if (currentStageIndex < 0) { currentStageIndex = 0; }
+                    double progressPercentage = (double)currentStageIndex / (statusStages.Length - 1) * 100;
+
+                    <ul class="timeline">
+                        <div class="progress-line" style="width: @progressPercentage%;"></div>
+                        @for (int i = 0; i < statusStages.Length; i++)
+                        {
+                            var stepClass = (i < currentStageIndex) ? "completed" : (i == currentStageIndex) ? "active" : "";
+                            <li class="timeline-step @stepClass">
+                                <div class="step-circle">
+                                    @if (i < currentStageIndex)
+                                    {
+                                        <i class="fas fa-check"></i>
+                                    }
+                                    else if (i == currentStageIndex)
+                                    {
+
+                                        <i class="fa-solid fa-ship"></i>
+                                    }
+                                </div>
+                                <div class="step-label">@statusStages[i].GetDisplayName()</div>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (shipment.Trackings != null && shipment.Trackings.Any())
+                {
+                    <h5 class="mt-4 pt-3 border-top">Son Hareketler</h5>
+                    <div class="list-group list-group-flush trackings-list">
+                        @foreach (var tracking in shipment.Trackings.OrderByDescending(t => t.EventDateUtc))
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@tracking.Location</h6>
+                                    <small class="text-muted">@tracking.EventDateUtc.ToLocalTime().ToString("g")</small>
+                                </div>
+                                <p class="mb-1">@tracking.StatusDescription</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+
+@functions {
+    // Renkli durum rozetleri için yardımcı metot
+    public string GetStatusClass(ShipmentStatus status)
+    {
+        return status switch
+        {
+            ShipmentStatus.ReadyForDispatch => "bg-warning text-dark",
+            ShipmentStatus.InTransit => "bg-primary",
+            ShipmentStatus.AtCustoms => "bg-info text-dark",
+            ShipmentStatus.Completed => "bg-success",
+            ShipmentStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary",
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        // "Detayları Göster/Gizle" butonunun metnini değiştiren script
+        $(document).ready(function () {
+            $('.collapse').on('show.bs.collapse', function () {
+                $('a[href="#' + $(this).attr('id') + '"]').text('Detayları Gizle');
+            }).on('hide.bs.collapse', function () {
+                $('a[href="#' + $(this).attr('id') + '"]').text('Detayları Göster');
+            });
+        });
+    </script>
+}

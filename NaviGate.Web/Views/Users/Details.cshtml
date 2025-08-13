@@ -1,0 +1,43 @@
+﻿@model NaviGate.Web.Models.User
+
+@{
+    ViewData["Title"] = "Kullanıcı Detayları";
+    var roles = ViewData["Roles"] as IList<string>;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <h4>@Model.FirstName @Model.LastName</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Adı</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.FirstName)</dd>
+
+        <dt class="col-sm-2">Soyadı</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.LastName)</dd>
+
+        <dt class="col-sm-2">E-posta</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Email)</dd>
+
+        <dt class="col-sm-2">Firma</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Firm.FirmName)</dd>
+
+        <dt class="col-sm-2">Roller</dt>
+        <dd class="col-sm-10">
+            @if (roles != null && roles.Any())
+            {
+                @string.Join(", ", roles)
+            }
+            else
+            {
+                <text>Rol atanmamış</text>
+            }
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Düzenle</a> |
+    <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+</div>
+

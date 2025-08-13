@@ -1,0 +1,248 @@
+﻿@model NaviGate.Web.ViewModels.ShipmentEditViewModel
+@using NaviGate.Web.Helpers
+@{
+    ViewData["Title"] = "Sevkiyat Düzenle";
+}
+<h1>@ViewData["Title"]</h1>
+<h4>Referans No: @Model.Shipment.ReferenceNumber</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        @*
+            DÜZELTME 1: Forma bir ID eklendi -> id="editShipmentForm"
+            Bu ID, JavaScript'in formu bulabilmesi için zorunludur.
+        *@
+        <form id="editShipmentForm" asp-action="Edit" asp-route-id="@Model.Shipment.ShipmentId" method="post" enctype="multipart/form-data">
+            @* DÜZELTME: Hataları daha net görmek için validation summary'i "All" yapabilirsiniz. *@
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Shipment.ShipmentId" />
+
+            @* --- ANA SEVKİYAT BİLGİLERİ --- *@
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="Shipment.FirmId" class="control-label"></label>
+                    <select asp-for="Shipment.FirmId" class="form-control" asp-items="Model.FirmOptions"></select>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="Shipment.FirmId" />
+            }
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.ReferenceNumber" class="control-label"></label>
+                <input asp-for="Shipment.ReferenceNumber" class="form-control" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.Status" class="control-label"></label>
+                <select asp-for="Shipment.Status" class="form-control" asp-items="Html.GetEnumSelectList<ShipmentStatus>()"></select>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.CarrierId" class="control-label"></label>
+                <select asp-for="Shipment.CarrierId" class="form-control" asp-items="Model.CarrierOptions"></select>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.DeparturePortId" class="control-label"></label>
+                <select asp-for="Shipment.DeparturePortId" class="form-control" asp-items="Model.DeparturePortOptions"></select>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.ArrivalPortId" class="control-label"></label>
+                <select asp-for="Shipment.ArrivalPortId" class="form-control" asp-items="Model.ArrivalPortOptions"></select>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.EstimatedDepartureUtc" class="control-label"></label>
+                <input asp-for="Shipment.EstimatedDepartureUtc" class="form-control" type="date" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.EstimatedArrivalUtc" class="control-label"></label>
+                <input asp-for="Shipment.EstimatedArrivalUtc" class="form-control" type="date" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.FreightCost" class="control-label"></label>
+                <input asp-for="Shipment.FreightCost" class="form-control" type="number" />
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Shipment.Incoterms" class="control-label"></label>
+                <input asp-for="Shipment.Incoterms" class="form-control" />
+            </div>
+
+            @* --- KONTEYNERLER BÖLÜMÜ --- *@
+            <hr />
+            <h4>Konteynerler</h4>
+            <div id="containerList">
+                @for (int i = 0; i < Model.Containers.Count; i++)
+                {
+                    <div class="container-item card card-body mb-3 position-relative">
+                        <input type="hidden" name="Containers[@i].ContainerId" value="@Model.Containers.ElementAt(i).ContainerId" />
+                        <input type="hidden" name="Containers[@i].ShipmentId" value="@Model.Containers.ElementAt(i).ShipmentId" />
+                        <button type="button" class="btn-close position-absolute top-0 end-0 p-2 remove-item" aria-label="Close"></button>
+                        <h5>Konteyner</h5>
+                        <div class="form-group">
+                            <label class="control-label">Konteyner Numarası (*)</label>
+                            <input name="Containers[@i].ContainerNumber" class="form-control" value="@Model.Containers.ElementAt(i).ContainerNumber" required />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="control-label">Konteyner Tipi (*)</label>
+                            <input name="Containers[@i].ContainerType" class="form-control" value="@Model.Containers.ElementAt(i).ContainerType" placeholder="örn: 40'HC" required />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class ="control-label">Mühür Numarası</label>
+                            <input name="Containers[@i].SealNumber" class="form-control" value="@Model.Containers.ElementAt(i).SealNumber" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="control-label">Brüt Ağırlık (Kg)</label>
+                            <input name="Containers[@i].GrossWeightKg" class="form-control" value="@Model.Containers.ElementAt(i).GrossWeightKg" type="text" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="control-label">Paket Adedi</label>
+                            <input name="Containers[@i].PackageQuantity" class="form-control" value="@Model.Containers.ElementAt(i).PackageQuantity" type="number" />
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" id="addContainer" class="btn btn-outline-secondary mt-2 mb-3">Yeni Konteyner Ekle +</button>
+
+            @* --- DÖKÜMANLAR BÖLÜMÜ --- *@
+            <hr />
+            <h4>Dökümanlar</h4>
+            <div id="documentList">
+                @for (int i = 0; i < Model.Documents.Count; i++)
+                {
+                    <div class="document-item card card-body mb-3 position-relative">
+                        <input type="hidden" name="Documents[@i].DocumentId" value="@Model.Documents[i].DocumentId" />
+                        <input type="hidden" name="Documents[@i].ExistingFileName" value="@Model.Documents[i].FileName" />
+                        <input type="hidden" asp-for="Documents[i].VerificationStatus" />
+                        <button type="button" class="btn-close position-absolute top-0 end-0 p-2 remove-document" aria-label="Close"></button>
+                        <h5>Döküman</h5>
+                        <div class="form-group">
+                            <label asp-for="Documents[i].DocumentType" class="control-label">Döküman Tipi (*)</label>
+                            <select name="Documents[@i].DocumentType" class="form-control" asp-for="Documents[i].DocumentType" asp-items="Html.GetEnumSelectList<DocumentType>()"></select>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Mevcut Dosya</label>
+                            <div>
+                                <span>@Model.Documents[i].FileName</span>
+                                @if (!string.IsNullOrEmpty(Model.Documents[i].FileName))
+                                {
+                                    <a asp-controller="Documents" asp-action="Download" asp-route-id="@Model.Documents[i].DocumentId" class="btn btn-sm btn-outline-primary ms-2">İndir</a>
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Yeni Dosya Yükle (Değiştirmek için seçin)</label>
+                            <input type="file" name="Documents[@i].NewDocumentFile" class="form-control" />
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" id="addDocument" class="btn btn-outline-secondary mt-2 mb-3">Yeni Döküman Ekle +</button>
+            <div class="form-group mt-4">
+                <input type="submit" value="Kaydet" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            let containerIndex = $("#containerList .container-item").length;
+            let documentIndex = $("#documentList .document-item").length;
+            // jQuery'nin standart sayı doğrulama metodunu bir değişkende saklayalım.
+            var originalNumberMethod = $.validator.methods.number;
+
+            // Sayı doğrulama metodunu, Türkçe formatını anlayacak şekilde ezelim (override).
+            $.validator.methods.number = function(value, element) {
+
+                // Eğer alan boşsa veya bir değer girilmemişse, geçerli say.
+                if (this.optional(element)) {
+                    return true;
+                }
+
+                // 1. Binlik ayırıcı olan tüm noktaları (.) kaldır.
+                // 2. Ondalık ayırıcı olan virgülü (,) noktaya (.) çevir.
+                // Örnek: Kullanıcı "1.234,56" girerse, bu kod onu "123456.56" yapar.
+                var normalizedValue = value.replace(/\./g, '').replace(/,/g, '.');
+
+                // Orijinal jQuery metodunu bu temizlenmiş ve standart hale getirilmiş değerle çağır.
+                // Orijinal metot "123456.56" formatını anlar ve doğru şekilde doğrular.
+                return originalNumberMethod.call(this, normalizedValue, element);
+            };
+
+            // Konteyner Ekleme
+            $("#addContainer").click(function () {
+                var containerHtml = `
+                    <div class="container-item card card-body mb-3 position-relative">
+                        <button type="button" class="btn-close position-absolute top-0 end-0 p-2 remove-item" aria-label="Close"></button>
+                        <h5>Konteyner</h5>
+                        <div class="form-group">
+                            <label>Konteyner Numarası (*)</label>
+                            <input name="Containers[${containerIndex}].ContainerNumber" class="form-control" required />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Konteyner Tipi (*)</label>
+                            <input name="Containers[${containerIndex}].ContainerType" class="form-control" placeholder="örn: 40'HC" required />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Mühür Numarası</label>
+                            <input name="Containers[${containerIndex}].SealNumber" class="form-control" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Brüt Ağırlık (Kg)</label>
+                            <input name="Containers[${containerIndex}].GrossWeightKg" class="form-control" type="text" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Paket Adedi</label>
+                            <input name="Containers[${containerIndex}].PackageQuantity" class="form-control" type="number" />
+                        </div>
+                    </div>`;
+                $("#containerList").append(containerHtml);
+                containerIndex++;
+            });
+
+            // Döküman Ekleme Butonu
+            $("#addDocument").on('click', function() {
+                console.log("Döküman ekle butonuna tıklandı"); // Test için
+                const documentTypes = [
+                    { value: "Invoice", text: "Fatura" },
+                    { value: "BillOfLading", text: "Konşimento" },
+                    { value: "PackingList", text: "Çeki Listesi" },
+                    { value: "InsurancePolicy", text: "Sigorta Poliçesi" },
+                    { value: "Other", text: "Diğer" }
+                ];
+                let optionsHtml = '<option value="">-- Tip Seçiniz --</option>';
+                documentTypes.forEach(function(item) {
+                    optionsHtml += `<option value="${item.value}">${item.text}</option>`;
+                });
+                const documentHtml = `
+                    <div class="document-item card card-body mb-3 position-relative">
+                        <button type="button" class="btn-close position-absolute top-0 end-0 p-2 remove-document" aria-label="Close"></button>
+                        <h5>Yeni Döküman</h5>
+                        <div class="form-group">
+                            <label>Döküman Tipi (*)</label>
+                            <select name="Documents[${documentIndex}].DocumentType" class="form-control" required>
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Dosya (*)</label>
+                            <input type="file" name="Documents[${documentIndex}].NewDocumentFile" class="form-control" required />
+                        </div>
+                    </div>`;
+                $("#documentList").append(documentHtml);
+                documentIndex++;
+            });
+
+            // Silme İşlemi
+            $(document).on('click', '.remove-item', function () {
+                $(this).closest('.card').remove();
+            });
+        });
+    </script>
+}

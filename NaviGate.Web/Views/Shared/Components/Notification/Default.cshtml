@@ -1,0 +1,100 @@
+﻿@model NaviGate.Web.ViewModels.NotificationViewModel
+@using NaviGate.Web.Helpers
+
+@* Bu bileşene özel CSS stilleri *@
+<style>
+    .notification-dropdown-item {
+        white-space: normal; /* Dropdown'daki metinlerin alt satıra geçmesini sağlar */
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    .notification-icon {
+        font-size: 1.25rem;
+        width: 30px; /* İkonların aynı hizada durmasını sağlar */
+    }
+    .notification-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* En fazla 2 satır göster */
+        -webkit-box-orient: vertical;
+    }
+
+</style>
+    
+<li class="nav-item dropdown me-2">
+@* DEĞİŞİKLİK 1: Linke padding ve ikon boyutunu ayarlayan class'lar eklendi *@
+    <a class="nav-link text-light px-3" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Bildirimler" style="font-size: 1.5rem;">
+        <i class="fas fa-bell"></i>
+        @if (Model.UnresolvedCount > 0)
+        {
+            @* DEĞİŞİKLİK 2: Rozetin konumunu ve boyutunu ayarlayan stil eklendi *@
+            <span class="badge bg-danger rounded-pill" style="position: absolute; top: 8px; right: 8px; font-size: 0.50em; padding: 0.25em 0.5em;">
+                @Model.UnresolvedCount
+            </span>
+        }
+    </a>
+@*<li class="nav-item dropdown me-2">
+    <a class="nav-link text-light" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Bildirimler">
+        <i class="fas fa-bell"></i>
+        @if (Model.UnresolvedCount > 0)
+        {
+            <span class="badge bg-danger rounded-pill" style="position: relative; top: -10px; left: -5px;">
+                @Model.UnresolvedCount
+            </span>
+        }
+    </a>*@
+    
+    @* DÜZENLEME: dropdown-menu-dark kaldırıldı, shadow eklendi *@
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationDropdown" style="width: 380px;">
+        <li><h6 class="dropdown-header">Uyarı Bildirimleri</h6></li>
+        
+        @if (!Model.RecentUnresolvedAlerts.Any())
+        {
+            <li>
+                <div class="dropdown-item text-muted d-flex align-items-center">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <span>Yeni bildiriminiz yok.</span>
+                </div>
+            </li>
+        }
+        else
+        {
+            @foreach (var alert in Model.RecentUnresolvedAlerts)
+            {
+                // Her bir uyarı için renk ve ikon belirleme mantığı
+                
+                    var iconClass = "fas fa-info-circle";
+                    var iconColorClass = "text-secondary";
+                    switch (alert.Severity) {
+                        case "Kritik":
+                        case "Hata":
+                            iconColorClass = "text-danger"; iconClass = "fas fa-times-circle"; break;
+                        case "Önemli":
+                            iconColorClass = "text-danger"; iconClass = "fas fa-exclamation-triangle"; break;
+                        case "Uyarı":
+                            iconColorClass = "text-warning"; iconClass = "fas fa-exclamation-triangle"; break;
+                    }
+                
+                <li>
+                    <a class="dropdown-item notification-dropdown-item" asp-controller="Shipments" asp-action="Details" asp-route-id="@alert.ShipmentId">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3">
+                                <i class="notification-icon @iconClass @iconColorClass"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">@alert.AlertType - @alert.Shipment.ReferenceNumber</div>
+                                <div class="small text-muted notification-text">
+                                    @alert.Description
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            }
+        }
+        
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-center small" asp-controller="AiAlerts" asp-action="Index">Tüm Uyarıları Gör</a></li>
+    </ul>
+</li>

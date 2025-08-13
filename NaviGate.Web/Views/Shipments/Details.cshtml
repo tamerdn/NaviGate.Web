@@ -1,0 +1,149 @@
+﻿@model NaviGate.Web.Models.Shipment
+
+@{
+    ViewData["Title"] = "Sevkiyat Detayları";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Referans No: @Model.ReferenceNumber</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <h5>Temel Bilgiler</h5>
+        <dl class="row">
+            <dt class="col-sm-4">Firma</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Firm.FirmName)</dd>
+
+            <dt class="col-sm-4">Durum</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+
+            <dt class="col-sm-4">Oluşturan Kullanıcı</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.CreatedByUser.FirstName) @Html.DisplayFor(model => model.CreatedByUser.LastName)</dd>
+
+            <dt class="col-sm-4">Oluşturulma Tarihi</dt>
+            <dd class="col-sm-8">@Model.CreatedAtUtc.ToLocalTime().ToString("g")</dd>
+            
+            @* Güncellenme tarihinin dolu olup olmadığını (null olup olmadığını) kontrol et *@
+            @if (Model.ModifiedAtUtc.HasValue)
+            {
+                <dt class="col-sm-4">
+                    Güncellenme Tarihi
+                </dt>
+                <dd class="col-sm-8">
+                    @* Eğer bir değer varsa, .Value ile o değere eriş ve sonra formatla *@
+                    @Model.ModifiedAtUtc.Value.ToLocalTime().ToString("g")
+                </dd>
+            }
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.FreightCost)
+            </dt>
+            <dd class="col-sm-8">
+                @* Değeri para birimi formatında gösterelim *@
+                @Model.FreightCost?.ToString("C", new System.Globalization.CultureInfo("tr-TR"))
+            </dd>
+        </dl>
+    </div>
+    <div class="col-md-6">
+        <h5>Taşıma Bilgileri</h5>
+        <dl class="row">
+            <dt class="col-sm-4">Taşıyıcı Firma</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.Carrier.CarrierName)</dd>
+
+            <dt class="col-sm-4">Kalkış Limanı</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.DeparturePort.PortName)</dd>
+
+            <dt class="col-sm-4">Varış Limanı</dt>
+            <dd class="col-sm-8">@Html.DisplayFor(model => model.ArrivalPort.PortName)</dd>
+
+            <dt class="col-sm-4">Tahmini Kalkış</dt>
+            <dd class="col-sm-8">@Model.EstimatedDepartureUtc.ToShortDateString()</dd>
+
+            <dt class="col-sm-4">Tahmini Varış</dt>
+            <dd class="col-sm-8">@Model.EstimatedArrivalUtc.ToShortDateString()</dd>
+
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.Incoterms)
+            </dt>
+            <dd class="col-sm-8">
+                @Html.DisplayFor(model => model.Incoterms)
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<hr />
+
+<h4>Konteynerler</h4>
+@if (Model.Containers != null && Model.Containers.Any())
+{
+    <table class="table table-sm table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Konteyner Numarası</th>
+                <th>Tipi</th>
+                <th>Mühür No</th>
+                <th>Brüt Ağırlık (kg)</th>
+                <th>Paket Adedi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var container in Model.Containers)
+            {
+                <tr>
+                    <td>@container.ContainerNumber</td>
+                    <td>@container.ContainerType</td>
+                    <td>@container.SealNumber</td>
+                    <td>@container.GrossWeightKg</td>
+                    <td>@container.PackageQuantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Bu sevkiyata ait konteyner bulunmamaktadır.</p>
+}
+
+<hr />
+<h4>Dökümanlar</h4>
+@if (Model.Documents != null && Model.Documents.Any())
+{
+    <table class="table table-sm table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Döküman Tipi</th>
+                <th>Dosya Adı</th>
+                <th>Yükleyen</th>
+                <th>Yüklenme Tarihi</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doc in Model.Documents)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => doc.DocumentType)</td>
+                    <td>@Html.DisplayFor(modelItem => doc.FileName)</td>
+                    <td>@(doc.UploadedByUser?.FirstName)</td>
+                    <td>@doc.UploadDateUtc.ToLocalTime().ToString("g")</td>
+                    <td class="text-center">
+                        <a asp-controller="Documents" asp-action="Download" asp-route-id="@doc.DocumentId" class="btn btn-sm btn-outline-primary">İndir</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Bu sevkiyata ait döküman bulunmamaktadır.</p>
+}
+
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.ShipmentId" class="btn btn-primary">Düzenle</a>
+    <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+</div>

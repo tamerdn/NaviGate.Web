@@ -1,0 +1,60 @@
+﻿@model NaviGate.Web.Models.Container
+
+@{
+    ViewData["Title"] = "Konteyner Sil";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h3 class="text-danger">Bu kaydı konteynerı olarak silmek istediğinizden emin misiniz?</h3>
+<p class="text-danger">Bu işlem geri alınamaz.</p>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ContainerNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ContainerNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ContainerType)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ContainerType)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.SealNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.SealNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.GrossWeightKg)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.GrossWeightKg)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PackageQuantity)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PackageQuantity)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Shipment)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Shipment.ReferenceNumber)
+        </dd>
+    </dl>
+
+    <div class="mt-4">
+        <form asp-action="Delete" asp-route-id="@Model.ContainerId" method="post" style="display: inline;">
+            <input type="submit" value="Evet, Sil" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+        </form>
+   </div>
+</div>
+
+

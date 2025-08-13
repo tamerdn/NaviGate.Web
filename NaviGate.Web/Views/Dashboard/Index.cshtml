@@ -1,0 +1,168 @@
+﻿@model NaviGate.Web.ViewModels.DashboardViewModel
+@using NaviGate.Web.Helpers;
+@{
+    ViewData["Title"] = "Ana Panel";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">Hoş Geldiniz, @Model.UserFirstName @Model.UserLastName!</h1>
+        <p class="text-muted">
+            Bugün @DateTime.Now.ToString("dd MMMM yyyy, dddd"). 
+        </p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-controller="Shipments" asp-action="Create" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>
+            Yeni Sevkiyat Oluştur
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <h1 class="mt-4">@ViewData["Title"]</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">Sisteminize genel bakış</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        <div class="text-end">
+                            <div class="fs-3">@Model.UnresolvedAlertsCount</div>
+                            <div>Çözülmemiş Uyarı</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="AiAlerts" asp-action="Index">Tüm Uyarılar</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <i class="fas fa-truck-loading fa-2x"></i>
+                        <div class="text-end">
+                            <div class="fs-3">@Model.ActiveShipmentsCount</div>
+                            <div>Aktif Sevkiyat</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="Shipments" asp-action="Index">Tüm Sevkiyatlar</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div> 
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                @* Rengi sarı ve yazıyı siyah yaptık *@
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <i class="fas fa-file-signature fa-2x"></i>
+                        <div class="text-end">
+                            <div class="fs-3">@Model.PendingDocumentsCount</div>
+                            <div>Onay Bekleyen Döküman</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" asp-controller="Documents" asp-action="Index">Tüm Dökümanlar</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-clock me-1"></i>
+                    Son Sevkiyat Hareketleri
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentTrackings.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var tracking in Model.RecentTrackings)
+                            {
+                                <li class="list-group-item">
+                                    <a asp-controller="Shipments" asp-action="Details" asp-route-id="@tracking.ShipmentId">@tracking.Shipment?.ReferenceNumber</a>:
+                                    @tracking.StatusDescription (@tracking.Location)
+                                    <span class="text-muted float-end">@tracking.EventDateUtc.ToLocalTime().ToString("g")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Henüz sevkiyat hareketi yok.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Son Eklenen Sevkiyatlar
+                </div>
+                <div class="card-body">
+                     @if (Model.RecentShipments.Any())
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var shipment in Model.RecentShipments)
+                    { // <-- 'shipment' değişkeni bu parantez içinde yaşamaya başlar
+
+                        // RENK BELİRLEME MANTIĞI DÖNGÜNÜN İÇİNDE OLMALI
+                        
+                            // Bu blok 'shipment' değişkenini görebilir, çünkü döngünün içinde.
+                            var statusClass = "bg-secondary"; // Varsayılan renk (Gri)
+                            switch (shipment.Status)
+                            {
+                                case ShipmentStatus.ReadyForDispatch:
+                                    statusClass = "bg-info"; // Açık Mavi
+                                    break;
+                                case ShipmentStatus.InTransit:
+                                    statusClass = "bg-primary"; // Mavi
+                                    break;
+                                case ShipmentStatus.AtCustoms:
+                                     statusClass = "bg-warning"; // Sarı
+                                     break;
+                                case ShipmentStatus.Completed:
+                                    statusClass = "bg-success"; // Yeşil
+                                    break;
+                                case ShipmentStatus.Cancelled:
+                                    statusClass = "bg-danger"; // Kırmızı
+                                    break;
+                            }
+                        
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a asp-controller="Shipments" asp-action="Details" asp-route-id="@shipment.ShipmentId">
+                                @shipment.ReferenceNumber
+                            </a>
+                            
+                            <span class="badge @statusClass rounded-pill">
+                                @shipment.Status.GetDisplayName()
+                            </span>
+                        </li>
+
+                    } 
+                </ul>
+            }
+            else
+            {
+                <p>Henüz sevkiyat oluşturulmamış.</p>
+            }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

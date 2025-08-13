@@ -1,0 +1,102 @@
+﻿@model NaviGate.Web.Models.Shipment
+
+@{
+    ViewData["Title"] = "Sevkiyat Sil";
+}
+<h1>@ViewData["Title"]</h1>
+<h3 class="text-danger">Bu kaydı kalıcı olarak silmek istediğinizden emin misiniz?</h3>
+<p class="text-danger">Bu işlem geri alınamaz.</p>
+
+<div>
+
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ReferenceNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ReferenceNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EstimatedDepartureUtc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.EstimatedDepartureUtc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EstimatedArrivalUtc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.EstimatedArrivalUtc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.FreightCost)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FreightCost)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Incoterms)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Incoterms)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedAtUtc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedAtUtc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Firm)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Firm.FirmName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedByUser)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedByUser.Id)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Carrier)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Carrier.CarrierName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DeparturePort)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DeparturePort.PortName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ArrivalPort)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ArrivalPort.PortName)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        @* Silinecek olan sevkiyatın ID'sini formun içinde gizli olarak tutuyoruz *@
+        <input type="hidden" asp-for="ShipmentId" />
+        @* Butonun tipi "submit" olmalı ki formu göndersin *@
+        <input type="submit" value="Evet, Sil" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+    </form>
+</div>
+@*
+<div class="mt-4">
+    <form asp-action="Delete" asp-route-id="@Model.ShipmentId" method="post" style="display: inline;">
+        <a asp-action="Index" type="submit" class="btn btn-danger">Evet, Sil</a>
+        <a asp-action="Index" class="btn btn-secondary">Listeye Geri Dön</a>
+    </form>
+</div>*@
